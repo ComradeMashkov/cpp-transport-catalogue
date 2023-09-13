@@ -10,11 +10,11 @@ namespace iostream {
 
 Stop GetStopQuery(std::string_view query);
 
-Bus GetBusQuery(TransportCatalogue& cat, std::string_view query);
+Bus GetBusQuery(TransportCatalogue& catalogue, std::string_view query);
 
-std::vector<Distance> GetDistanceQuery(TransportCatalogue& cat, std::string_view query);
+std::vector<Distance> GetDistanceQuery(TransportCatalogue& catalogue, std::string_view query);
 
-void InputStream(TransportCatalogue& cat);
+void InputStream(TransportCatalogue& catalogue, std::istream& is = std::cin);
 
 } // namespace iostream
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <deque>
+#include <iostream>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -18,8 +19,7 @@ struct Bus;
 struct Stop {
     std::string name;
 
-    double latitude;
-    double longtitude;
+    detail::geo::Coordinates coords;
 
     std::vector<Bus*> buses;
 };
@@ -49,26 +49,28 @@ private:
     std::hash<const void*> v_hasher_;
 };
 
+struct Route {
+    std::unordered_set<const Stop*> unique_stops;
+    size_t distance;
+    double length;
+};
+
 using StopDict = std::unordered_map<std::string_view, Stop*>;
 using BusDict = std::unordered_map<std::string_view, Bus*>;
 using DistanceDict = std::unordered_map<std::pair<const Stop*, const Stop*>, int, DistanceHasher>;
 
 class TransportCatalogue {
 public:
-    void AddBus(Bus&& bus);
-    void AddStop(Stop&& stop);
-    void AddDistance(const std::vector<Distance>& distances);
+    void AddBus(const Bus& bus);
+    void AddStop(const Stop& stop);
+    void AddDistance(const Distance& distance);
 
     Bus* GetBus(std::string_view bus_name);
     Stop* GetStop(std::string_view stop_name);
 
-    std::unordered_set<const Stop*> GetUniqueStops(const Bus* bus) const;
+    // Для вывода
+    Route GetRouteInfo(const Bus* bus) const;
     std::unordered_set<const Bus*> GetUniqueBuses(const Stop* stop) const;
-
-    double GetLength(const Bus* bus) const;
-
-    size_t GetDistanceBetweenStops(const Stop* from, const Stop* to) const;
-    size_t GetRouteDistance(const Bus* bus) const;
 
 private:
     std::deque<Stop> stops_;
@@ -78,6 +80,14 @@ private:
     BusDict buses_associative_;
 
     DistanceDict distances_;
+    
+    // Для вывода
+    std::unordered_set<const Stop*> GetUniqueStops(const Bus* bus) const;
+    size_t GetRouteDistance(const Bus* bus) const;
+    double GetRouteLength(const Bus* bus) const;
+    
+    // Для метода GetRouteDistance
+    size_t GetDistanceBetweenStops(const Stop* from, const Stop* to) const;
 };
 
 } // namespace transport_catalogue

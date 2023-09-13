@@ -14,13 +14,13 @@ Stop GetStopQuery(std::string_view query) {
 
 	Stop stop;
 	stop.name = query.substr(STOP_NAME_POS, COLON_POS - STOP_NAME_POS);
-	stop.latitude = std::stod(std::string(query).substr(COLON_POS + 2u, COMMA_POS - COLON_POS - 2u));
-	stop.longtitude = std::stod(std::string(query).substr(COMMA_POS + 2u));
+	stop.coords.lat = std::stod(std::string(query).substr(COLON_POS + 2u, COMMA_POS - COLON_POS - 2u));
+	stop.coords.lng = std::stod(std::string(query).substr(COMMA_POS + 2u));
 
 	return stop;
 }
 
-Bus GetBusQuery(TransportCatalogue& cat, std::string_view query) {
+Bus GetBusQuery(TransportCatalogue& catalogue, std::string_view query) {
 	const auto COLON_POS = query.find(':');
 
 	Bus bus;
@@ -33,12 +33,12 @@ Bus GetBusQuery(TransportCatalogue& cat, std::string_view query) {
 		auto DASH_POS = query.find('-');
 
 		while (DASH_POS != std::string::npos) {
-			bus.stops.push_back(cat.GetStop(query.substr(0u, DASH_POS - 1u)));
+			bus.stops.push_back(catalogue.GetStop(query.substr(0u, DASH_POS - 1u)));
 			query = query.substr(DASH_POS + 2u);
 			DASH_POS = query.find('-');
 		}
 
-		bus.stops.push_back(cat.GetStop(query.substr(0u, DASH_POS - 1u)));
+		bus.stops.push_back(catalogue.GetStop(query.substr(0u, DASH_POS - 1u)));
 
 		for (size_t i = bus.stops.size() - 1u; i > 0; --i) {
 			bus.stops.push_back(bus.stops[i - 1u]);
@@ -47,18 +47,18 @@ Bus GetBusQuery(TransportCatalogue& cat, std::string_view query) {
 
 	else {
 		while (GREATER_THAN_POS != std::string::npos) {
-			bus.stops.push_back(cat.GetStop(query.substr(0u, GREATER_THAN_POS - 1u)));
+			bus.stops.push_back(catalogue.GetStop(query.substr(0u, GREATER_THAN_POS - 1u)));
 			query = query.substr(GREATER_THAN_POS + 2u);
 			GREATER_THAN_POS = query.find('>');
 		}
 
-		bus.stops.push_back(cat.GetStop(query.substr(0u, GREATER_THAN_POS - 1u)));
+		bus.stops.push_back(catalogue.GetStop(query.substr(0u, GREATER_THAN_POS - 1u)));
 	}
 
 	return bus;
 }
 
-std::vector<Distance> GetDistanceQuery(TransportCatalogue& cat, std::string_view query) {
+std::vector<Distance> GetDistanceQuery(TransportCatalogue& catalogue, std::string_view query) {
 	std::vector<Distance> result;
 
 	const auto COLON_POS = query.find(':');
@@ -73,7 +73,7 @@ std::vector<Distance> GetDistanceQuery(TransportCatalogue& cat, std::string_view
 		std::string to = std::string(query).substr(query.find('m') + STOP_NAME_POS);
 		to = to.substr(0u, to.find(','));
 
-		result.push_back({ cat.GetStop(from), cat.GetStop(to), distance });
+		result.push_back({ catalogue.GetStop(from), catalogue.GetStop(to), distance });
 
 		query = query.substr(query.find(',') + 2u);
 	}
@@ -81,13 +81,13 @@ std::vector<Distance> GetDistanceQuery(TransportCatalogue& cat, std::string_view
 	int distance = std::stoi(std::string(query).substr(0u, query.find('m')));
 	std::string to = std::string(query).substr(query.find('m') + STOP_NAME_POS);
 	
-	result.push_back({ cat.GetStop(from), cat.GetStop(to), distance });
+	result.push_back({ catalogue.GetStop(from), catalogue.GetStop(to), distance });
 	return result;
 }
 
-void InputStream(TransportCatalogue& cat) {
+void InputStream(TransportCatalogue& catalogue, std::istream& is) {
 	std::string count;
-	std::getline(std::cin, count);
+	std::getline(is, count);
 
 	if (!count.empty()) {
 		std::string query;
@@ -96,7 +96,7 @@ void InputStream(TransportCatalogue& cat) {
 		size_t size = std::stoi(count);
 
 		for (size_t i = 0u; i < size; ++i) {
-			std::getline(std::cin, query);
+			std::getline(is, query);
 
 			if (!query.empty()) {
 				const auto SPACE_POS = query.find_first_not_of(' ');
@@ -112,16 +112,18 @@ void InputStream(TransportCatalogue& cat) {
 		}
 
 		for (const auto& stop : stops) {
-			cat.AddStop(GetStopQuery(stop));
+			catalogue.AddStop(GetStopQuery(stop));
 			
 		}
 
 		for (const auto& stop : stops) {
-			cat.AddDistance(GetDistanceQuery(cat, stop));
+			for (const auto& distance : GetDistanceQuery(catalogue, stop)) {
+				catalogue.AddDistance(distance);
+			}
 		}
 
 		for (const auto& bus : buses) {
-			cat.AddBus(GetBusQuery(cat, bus));
+			catalogue.AddBus(GetBusQuery(catalogue, bus));
 		}
 	}
 }
