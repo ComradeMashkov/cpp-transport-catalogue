@@ -53,6 +53,14 @@ Stop* TransportCatalogue::GetStop(std::string_view stop_name) {
 	}
 }
 
+BusDict TransportCatalogue::GetBusesAssociative() const {
+	return buses_associative_;
+}
+
+StopDict TransportCatalogue::GetStopsAssociative() const {
+	return stops_associative_;
+}
+
 Route TransportCatalogue::GetRouteInfo(const Bus* bus) const {
 	Route result;
 

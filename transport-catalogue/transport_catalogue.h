@@ -7,34 +7,11 @@
 #include <unordered_set>
 #include <vector>
 
-#include "geo.h"
+#include "domain.h"
+
+using namespace domain;
 
 namespace transport_catalogue {
-
-constexpr static size_t STOP_NAME_POS = 5u;
-constexpr static size_t BUS_NAME_POS = 4u;
-
-struct Bus;
-
-struct Stop {
-    std::string name;
-
-    detail::geo::Coordinates coords;
-
-    std::vector<Bus*> buses;
-};
-
-struct Bus {
-    std::string name;
-    std::vector<Stop*> stops;
-};
-
-struct Distance {
-    const Stop* from;
-    const Stop* to;
-
-    int distance;
-};
 
 struct DistanceHasher {
 public:
@@ -67,6 +44,9 @@ public:
 
     Bus* GetBus(std::string_view bus_name);
     Stop* GetStop(std::string_view stop_name);
+
+    BusDict GetBusesAssociative() const;
+    StopDict GetStopsAssociative() const;
 
     // Для вывода
     Route GetRouteInfo(const Bus* bus) const;
