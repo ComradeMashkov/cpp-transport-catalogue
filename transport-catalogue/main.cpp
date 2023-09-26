@@ -24,8 +24,5 @@ int main() {
     reader = Reader(file);
     reader.ParseQuery(catalogue, stat_request, render_settings);
 
-    request_handler = RequestHandler();
-    request_handler.HandleRequestType(catalogue, stat_request, render_settings);
-
-    Print(request_handler.GetDocument(), cout);
+    Print(request_handler.HandleRequest(catalogue, stat_request, render_settings), cout);
 }

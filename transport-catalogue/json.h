@@ -22,20 +22,13 @@ public:
     using runtime_error::runtime_error;
 };
 
-class Node {
-public:
-    using Value = std::variant<std::nullptr_t, Array, Dict, bool, int, double, std::string>;
-    
-    const Value& GetValue() const;
+using Value = std::variant<std::nullptr_t, Array, Dict, bool, int, double, std::string>;
 
-    Node() = default;
-    Node(bool value);
-    Node(Array array);
-    Node(Dict map);
-    Node(int value);
-    Node(std::string value);
-    Node(std::nullptr_t);
-    Node(double value);
+class Node final : public Value {
+public:  
+    using Value::Value;
+
+    const Value& GetValue() const;
 
     const Array& AsArray() const;
     const Dict& AsMap() const;
@@ -52,9 +45,6 @@ public:
     bool IsNull() const;
     bool IsArray() const;
     bool IsMap() const;
-
-private:
-    Value value_;
 };
     
 inline bool operator==(const Node& lhs, const Node& rhs) {

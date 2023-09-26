@@ -237,69 +237,41 @@ Node LoadNode(istream& input) {
 
 }  // namespace
 
-const Node::Value& Node::GetValue() const {
-    return value_;
-}
-
-Node::Node(bool value)
-    : value_(value) {
-}
-
-Node::Node(Array array)
-    : value_(move(array)) {
-}
-
-Node::Node(Dict map)
-    : value_(move(map)) {
-}
-
-Node::Node(int value)
-    : value_(value) {
-}
-
-Node::Node(string value)
-    : value_(move(value)) {
-}
-
-Node::Node(nullptr_t)
-    : Node() {
-}
-
-Node::Node(double value)
-    : value_(value) {
+const Value& Node::GetValue() const {
+    return *this;
 }
 
 const Array& Node::AsArray() const {
     if (IsArray()) {
-        return get<Array>(value_);
+        return get<Array>(*this);
     }
     throw logic_error("Current value is not an array-type");
 }
 
 const Dict& Node::AsMap() const {
     if (IsMap()) {
-        return get<Dict>(value_);
+        return get<Dict>(*this);
     }
     throw logic_error("Current value is not a dict-type");
 }
 
 int Node::AsInt() const {
     if (IsInt()) {
-        return get<int>(value_);
+        return get<int>(*this);
     }
     throw logic_error("Current value is not an integer-type");
 }
 
 const string& Node::AsString() const {
     if (IsString()) {
-        return get<string>(value_);
+        return get<string>(*this);
     }
     throw logic_error("Current value is not a string-type");
 }
 
 double Node::AsDouble() const {
     if (IsPureDouble()) {
-        return get<double>(value_);
+        return get<double>(*this);
     }
     if (IsDouble()) {
         return AsInt();
@@ -309,26 +281,26 @@ double Node::AsDouble() const {
 
 bool Node::AsBool() const {
     if (IsBool()) {
-        return get<bool>(value_);
+        return get<bool>(*this);
     }
     throw logic_error("Current value is not a bool-type");
 }
 
-bool Node::IsInt() const { return holds_alternative<int>(value_); }
+bool Node::IsInt() const { return holds_alternative<int>(*this); }
 
-bool Node::IsDouble() const { return holds_alternative<double>(value_) || holds_alternative<int>(value_); }
+bool Node::IsDouble() const { return holds_alternative<double>(*this) || holds_alternative<int>(*this); }
 
-bool Node::IsPureDouble() const { return holds_alternative<double>(value_); }
+bool Node::IsPureDouble() const { return holds_alternative<double>(*this); }
 
-bool Node::IsBool() const { return holds_alternative<bool>(value_); }
+bool Node::IsBool() const { return holds_alternative<bool>(*this); }
 
-bool Node::IsString() const { return holds_alternative<string>(value_); }
+bool Node::IsString() const { return holds_alternative<string>(*this); }
 
-bool Node::IsNull() const { return holds_alternative<nullptr_t>(value_); }
+bool Node::IsNull() const { return holds_alternative<nullptr_t>(*this); }
 
-bool Node::IsArray() const { return holds_alternative<Array>(value_); }
+bool Node::IsArray() const { return holds_alternative<Array>(*this); }
 
-bool Node::IsMap() const { return holds_alternative<Dict>(value_); }
+bool Node::IsMap() const { return holds_alternative<Dict>(*this); }
 
 Document::Document(Node root)
     : root_(move(root)) {

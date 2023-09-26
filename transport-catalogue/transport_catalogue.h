@@ -1,13 +1,13 @@
 #pragma once
 
+#include "domain.h"
+
 #include <deque>
 #include <iostream>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-
-#include "domain.h"
 
 using namespace domain;
 
@@ -48,9 +48,14 @@ public:
     BusDict GetBusesAssociative() const;
     StopDict GetStopsAssociative() const;
 
-    // Для вывода
     Route GetRouteInfo(const Bus* bus) const;
     std::unordered_set<const Bus*> GetUniqueBuses(const Stop* stop) const;
+
+    std::vector<detail::geo::Coordinates> GetStopsCoordinates() const;
+    std::vector<std::string_view> GetSortedBusesNames() const;
+    
+    BusQuery GetBusQuery(std::string_view query);
+    StopQuery GetStopQuery(std::string_view query);
 
 private:
     std::deque<Stop> stops_;
@@ -61,7 +66,6 @@ private:
 
     DistanceDict distances_;
     
-    // Для вывода
     std::unordered_set<const Stop*> GetUniqueStops(const Bus* bus) const;
     size_t GetRouteDistance(const Bus* bus) const;
     double GetRouteLength(const Bus* bus) const;
