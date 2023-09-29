@@ -21,7 +21,7 @@ int main() {
     RequestHandler request_handler;
 
     Reader reader;
-    reader = Reader(file);
+    reader = Reader(cin);
     reader.ParseQuery(catalogue, stat_request, render_settings);
 
     Print(request_handler.HandleRequest(catalogue, stat_request, render_settings), cout);

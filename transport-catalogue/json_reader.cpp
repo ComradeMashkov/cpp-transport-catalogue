@@ -23,8 +23,8 @@ void Reader::ParseQuery(TransportCatalogue& catalogue, std::vector<Stat>& stats,
 void Reader::ParseNode(const Node& root, TransportCatalogue& catalogue, std::vector<Stat>& stats, map_renderer::RenderSettings& render_settings) {
 	Dict dict;
 
-	if (root.IsMap()) {
-		dict = root.AsMap();
+	if (root.IsDict()) {
+		dict = root.AsDict();
 
 		try {
 			ParseNodeBase(dict.at("base_requests"), catalogue);
@@ -65,8 +65,8 @@ void Reader::ParseNodeBase(const Node& root, TransportCatalogue& catalogue) {
 		base_requests = root.AsArray();
 
 		for (auto base : base_requests) {
-			if (base.IsMap()) {
-				dict = base.AsMap();
+			if (base.IsDict()) {
+				dict = base.AsDict();
 
 				try {
 					node = dict.at("type");
@@ -119,8 +119,8 @@ void Reader::ParseNodeStat(const Node& node, std::vector<Stat>& stats) {
 
 		for (auto node : array) {
 
-			if (node.IsMap()) {
-				dict = node.AsMap();
+			if (node.IsDict()) {
+				dict = node.AsDict();
 				stat_node.id = dict.at("id").AsInt();
 				stat_node.type = dict.at("type").AsString();
 
@@ -221,9 +221,9 @@ void Reader::ParseNodeRenderColor(map_renderer::RenderSettings& render_settings,
 }
 
 void Reader::ParseNodeRender(const Node& node, map_renderer::RenderSettings& render_settings) {
-	Dict render_map = node.AsMap();
+	Dict render_map = node.AsDict();
 
-	if (node.IsMap()) {
+	if (node.IsDict()) {
 		ParseNodeRenderGeneric(render_settings, render_map);
 		ParseNodeRenderColor(render_settings, render_map);
 	}
@@ -234,50 +234,53 @@ void Reader::ParseNodeRender(const Node& node, map_renderer::RenderSettings& ren
 }
 
 Node Reader::MakeStopNode(int id, StopQuery query) {
-	Dict result;
-	Array buses;
+	Node result;
+	Builder builder;
 
 	if (!query.query_exists) {
-		result.emplace("request_id", Node{ id });
-		result.emplace("error_message", Node{ "not found"s });
+		builder.StartDict().Key("request_id"s).Value(id).Key("error_message"s).Value("not found"s).EndDict();
+		result = builder.Build();
 	}
 
 	else {
-		result.emplace("request_id", Node{ id });
+		builder.StartDict().Key("request_id"s).Value(id).Key("buses"s).StartArray();
 
 		for (std::string bus_name : query.buses) {
-			buses.push_back(Node{ bus_name });
+			builder.Value(bus_name);
 		}
 
-		result.emplace("buses", Node{ buses });
+		builder.EndArray().EndDict();
+		result = builder.Build();
 	}
 
-	return Node{ result };
+	return result;
 }
 
 Node Reader::MakeBusNode(int id, BusQuery query) {
-	Dict result;
+	Node result;
+	Builder builder;
 
 	if (!query.query_exists) {
-		result.emplace("request_id", Node{ id });
-		result.emplace("error_message", Node{ "not found"s });
-
+		result = builder.StartDict().Key("request_id"s).Value(id).Key("error_message"s).Value("not found"s).EndDict().Build();
 	}
 
 	else {
-		result.emplace("request_id", Node{ id });
-		result.emplace("curvature", Node{ query.curvature });
-		result.emplace("route_length", Node{ query.route_length });
-		result.emplace("stop_count", Node{ query.route_stops });
-		result.emplace("unique_stop_count", Node{ query.unique_stops });
+		result = builder.StartDict().Key("request_id"s).Value(id)
+		.Key("curvature"s).Value(query.curvature)
+		.Key("route_length"s).Value(query.route_length)
+		.Key("stop_count"s).Value(query.route_stops)
+		.Key("unique_stop_count"s).Value(query.unique_stops)
+		.EndDict().Build();
 
 	}
 
-	return Node{ result };
+	return result;
 }
 
 Node Reader::MakeMapNode(int id, TransportCatalogue& catalogue, map_renderer::RenderSettings& render_settings) {
-	Dict result;
+	Node result;
+	Builder builder;
+
 	map_renderer::MapRenderer map_renderer(render_settings);
 	std::ostringstream map_stream;
 	std::string map_string;
@@ -287,8 +290,7 @@ Node Reader::MakeMapNode(int id, TransportCatalogue& catalogue, map_renderer::Re
 	map_renderer.RenderMap(map_stream);
 	map_string = map_stream.str();
 
-	result.emplace("request_id", Node(id));
-	result.emplace("map", Node(map_string));
+	result = builder.StartDict().Key("request_id"s).Value(id).Key("map"s).Value(map_string).EndDict().Build();
 
 	return result;
 }
@@ -360,8 +362,8 @@ Stop Reader::ParseNodeStop(Node& node) {
 	Stop stop;
 	Dict dict;
 
-	if (node.IsMap()) {
-		dict = node.AsMap();
+	if (node.IsDict()) {
+		dict = node.AsDict();
 		stop.name = dict.at("name").AsString();
 		stop.coords.lat = dict.at("latitude").AsDouble();
 		stop.coords.lng = dict.at("longitude").AsDouble();
@@ -375,8 +377,8 @@ Bus Reader::ParseNodeBus(Node& node, TransportCatalogue& catalogue) {
 	Dict dict;
 	Array bus_stops;
 
-	if (node.IsMap()) {
-		dict = node.AsMap();
+	if (node.IsDict()) {
+		dict = node.AsDict();
 		bus.name = dict.at("name").AsString();
 		bus.is_roundtrip = dict.at("is_roundtrip").AsBool();
 
@@ -407,11 +409,11 @@ std::vector<Distance> Reader::ParseNodeDistances(Node& node, TransportCatalogue&
 	std::string to;
 	int distance;
 
-	if (node.IsMap()) {
-		stop = node.AsMap();
+	if (node.IsDict()) {
+		stop = node.AsDict();
 		from = stop.at("name").AsString();
 
-		road_map = stop.at("road_distances").AsMap();
+		road_map = stop.at("road_distances").AsDict();
 
 		for (auto [key, value] : road_map) {
 			to = key;
