@@ -200,17 +200,15 @@ size_t TransportCatalogue::GetDistanceBetweenStops(const Stop* from, const Stop*
 		return 0u;
 	}
 
-	try {
+	if (distances_.count(std::make_pair(from, to))) {
 		return distances_.at(std::make_pair(from, to));
 	}
-	catch (const std::out_of_range& e) {
-		try {
-			return distances_.at(std::make_pair(to, from));
-		}
-		catch (const std::out_of_range& e) {
-			return 0u;
-		}
+
+	if (distances_.count(std::make_pair(to, from))) {
+		return distances_.at(std::make_pair(to, from));
 	}
+
+	return 0u;
 }
 
 } // namespace transport_catalogue

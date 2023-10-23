@@ -4,8 +4,12 @@ using namespace std::string_literals;
 
 namespace request_handler {
 
-Document RequestHandler::HandleRequest(TransportCatalogue& catalogue, std::vector<Stat>& stats, RenderSettings& render_settings) {
+Document RequestHandler::HandleRequest(TransportCatalogue& catalogue, std::vector<Stat>& stats, RenderSettings& render_settings, RoutingSettings& routing_settings) {
 	std::vector<Node> result;
+
+	router::TransportRouter router;
+	router.SetRoutingSettings(routing_settings);
+	router.BuildRouter(catalogue);
 
 	for (auto stat : stats) {
 		if (stat.type == "Stop") {
@@ -16,6 +20,9 @@ Document RequestHandler::HandleRequest(TransportCatalogue& catalogue, std::vecto
 		}
 		else if (stat.type == "Map") {
 			result.push_back(reader_.MakeMapNode(stat.id, catalogue, render_settings));
+		}
+		else if (stat.type == "Route") {
+			result.push_back(reader_.MakeRouteNode(stat, catalogue, router));
 		}
 	}
 

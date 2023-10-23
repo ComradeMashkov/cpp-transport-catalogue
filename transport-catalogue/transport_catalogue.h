@@ -57,6 +57,8 @@ public:
     BusQuery GetBusQuery(std::string_view query);
     StopQuery GetStopQuery(std::string_view query);
 
+    size_t GetDistanceBetweenStops(const Stop* from, const Stop* to) const;
+
 private:
     std::deque<Stop> stops_;
     StopDict stops_associative_;
@@ -69,9 +71,6 @@ private:
     std::unordered_set<const Stop*> GetUniqueStops(const Bus* bus) const;
     size_t GetRouteDistance(const Bus* bus) const;
     double GetRouteLength(const Bus* bus) const;
-    
-    // Для метода GetRouteDistance
-    size_t GetDistanceBetweenStops(const Stop* from, const Stop* to) const;
 };
 
 } // namespace transport_catalogue

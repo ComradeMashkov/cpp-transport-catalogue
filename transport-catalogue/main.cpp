@@ -14,15 +14,17 @@ int main() {
 
     std::vector<Stat> stat_request;
     map_renderer::RenderSettings render_settings;
+    router::RoutingSettings routing_settings;
     TransportCatalogue catalogue;
 
-    std::ifstream file("input1.json");
+    std::ifstream file("input.json");
+    std::ofstream ofile("output.json");
 
     RequestHandler request_handler;
 
     Reader reader;
-    reader = Reader(cin);
-    reader.ParseQuery(catalogue, stat_request, render_settings);
+    reader = Reader(file);
+    reader.ParseQuery(catalogue, stat_request, render_settings, routing_settings);
 
-    Print(request_handler.HandleRequest(catalogue, stat_request, render_settings), cout);
+    Print(request_handler.HandleRequest(catalogue, stat_request, render_settings, routing_settings), cout);
 }

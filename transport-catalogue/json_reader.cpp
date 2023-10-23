@@ -16,11 +16,11 @@ Reader::Reader(std::istream& is)
 	: document_(Load(is)) {
 }
 
-void Reader::ParseQuery(TransportCatalogue& catalogue, std::vector<Stat>& stats, map_renderer::RenderSettings& render_settings) {
-	ParseNode(document_.GetRoot(), catalogue, stats, render_settings);
+void Reader::ParseQuery(TransportCatalogue& catalogue, std::vector<Stat>& stats, map_renderer::RenderSettings& render_settings, router::RoutingSettings& routing_settings) {
+	ParseNode(document_.GetRoot(), catalogue, stats, render_settings, routing_settings);
 }
 
-void Reader::ParseNode(const Node& root, TransportCatalogue& catalogue, std::vector<Stat>& stats, map_renderer::RenderSettings& render_settings) {
+void Reader::ParseNode(const Node& root, TransportCatalogue& catalogue, std::vector<Stat>& stats, map_renderer::RenderSettings& render_settings, router::RoutingSettings& routing_settings) {
 	Dict dict;
 
 	if (root.IsDict()) {
@@ -45,6 +45,13 @@ void Reader::ParseNode(const Node& root, TransportCatalogue& catalogue, std::vec
 		}
 		catch (...) {
 			std::cout << "Failed to parse a query: render settings are empty"sv;
+		}
+
+		try {
+			ParseNodeRoute(dict.at("routing_settings"), routing_settings);
+		}
+		catch (...) {
+			std::cout << "Failed to parse a query: route settings are empty";
 		}
 	}
 
@@ -124,11 +131,22 @@ void Reader::ParseNodeStat(const Node& node, std::vector<Stat>& stats) {
 				stat_node.id = dict.at("id").AsInt();
 				stat_node.type = dict.at("type").AsString();
 
-				if (stat_node.type != "Map") {
+				if ((stat_node.type == "Bus") || (stat_node.type == "Stop")) {
 					stat_node.name = dict.at("name").AsString();
+					stat_node.from = "";
+					stat_node.to = "";
 				}
+
 				else {
 					stat_node.name = "";
+					if (stat_node.type == "Route") {
+						stat_node.from = dict.at("from").AsString();
+						stat_node.to = dict.at("to").AsString();
+					}
+					else {
+						stat_node.from = "";
+						stat_node.to = "";
+					}
 				}
 
 				stats.push_back(stat_node);
@@ -233,6 +251,26 @@ void Reader::ParseNodeRender(const Node& node, map_renderer::RenderSettings& ren
 	}
 }
 
+void Reader::ParseNodeRoute(const Node& node, router::RoutingSettings& routing_settings) {
+	Dict route;
+
+	if (node.IsDict()) {
+		route = node.AsDict();
+
+		try {
+			routing_settings.bus_wait_time = route.at("bus_wait_time").AsDouble();
+			routing_settings.bus_velocity = route.at("bus_velocity").AsDouble();
+		}
+		catch (...) {
+			std::cout << "Failed to parse route settings";
+		}
+	}
+
+	else {
+		std::cout << "Failed to parse route settings: it is not a map";
+	}
+}
+
 Node Reader::MakeStopNode(int id, StopQuery query) {
 	Node result;
 	Builder builder;
@@ -293,6 +331,21 @@ Node Reader::MakeMapNode(int id, TransportCatalogue& catalogue, map_renderer::Re
 	result = builder.StartDict().Key("request_id"s).Value(id).Key("map"s).Value(map_string).EndDict().Build();
 
 	return result;
+}
+
+Node Reader::MakeRouteNode(Stat& stat, TransportCatalogue& catalogue, router::TransportRouter& router) {
+	const auto& route_info = router.GetRouteGraphInfo(router.GetRouteAtStop(catalogue.GetStop(stat.from))->bus_wait_start, router.GetRouteAtStop(catalogue.GetStop(stat.to))->bus_wait_start);
+	
+	if (!route_info) {
+		return Builder{}.StartDict().Key("request_id").Value(stat.id).Key("error_message").Value("not found").EndDict().Build();
+	}
+
+	Array items;
+	for (const auto& item : route_info->edges) {
+		items.emplace_back(std::visit(EdgeGetter{}, item));
+	}
+
+	return Builder{}.StartDict().Key("request_id").Value(stat.id).Key("total_time").Value(route_info->total_time).Key("items").Value(items).EndDict().Build();
 }
 
 void Reader::FillMap(map_renderer::MapRenderer& map_renderer, TransportCatalogue& catalogue) const {
