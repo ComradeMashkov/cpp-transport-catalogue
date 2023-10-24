@@ -21,18 +21,13 @@ class TransportRouter {
 public:
 	TransportRouter(TransportCatalogue& catalogue, RoutingSettings routing_settings);
 
-	std::optional<WaitRange> GetRouteAtStop(Stop* stop) const;
-	std::optional<RouteGraphInfo> GetRouteGraphInfo(VertexId start, VertexId end) const;
-
-	// Init method
-	void BuildRouter();
-
-
+	std::optional<RouteGraphInfo> GetRouteGraphInfo(Stop* from, Stop* to) const;
 
 private:
 	const std::variant<StopEdge, BusEdge>& GetEdgeAt(EdgeId id) const;
 	std::deque<Stop*> GetStopsPointers(TransportCatalogue& catalogue) const;
 	std::deque<Bus*> GetBusesPointers(TransportCatalogue& catalogue) const;
+	std::optional<WaitRange> GetRouteAtStop(Stop* stop) const;
 
 	void AddEdgeToStops();
 	void AddEdgeToBuses(TransportCatalogue& catalogue);

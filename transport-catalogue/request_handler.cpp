@@ -8,7 +8,6 @@ Document RequestHandler::HandleRequest(TransportCatalogue& catalogue, std::vecto
 	std::vector<Node> result;
 
 	router::TransportRouter router(catalogue, routing_settings);
-	router.BuildRouter();
 
 	for (auto stat : stats) {
 		if (stat.type == "Stop") {

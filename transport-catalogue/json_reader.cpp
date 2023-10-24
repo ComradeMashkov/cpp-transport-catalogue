@@ -334,8 +334,8 @@ Node Reader::MakeMapNode(int id, TransportCatalogue& catalogue, map_renderer::Re
 }
 
 Node Reader::MakeRouteNode(Stat& stat, TransportCatalogue& catalogue, router::TransportRouter& router) {
-	const auto& route_info = router.GetRouteGraphInfo(router.GetRouteAtStop(catalogue.GetStop(stat.from))->bus_wait_start, router.GetRouteAtStop(catalogue.GetStop(stat.to))->bus_wait_start);
-	
+	const auto route_info = router.GetRouteGraphInfo(catalogue.GetStop(stat.from), catalogue.GetStop(stat.to));
+
 	if (!route_info) {
 		return Builder{}.StartDict().Key("request_id").Value(stat.id).Key("error_message").Value("not found").EndDict().Build();
 	}
