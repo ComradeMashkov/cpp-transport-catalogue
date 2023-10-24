@@ -19,27 +19,25 @@ using namespace graph;
 
 class TransportRouter {
 public:
-	// Setters
+	TransportRouter(TransportCatalogue& catalogue, RoutingSettings routing_settings);
 
-	void SetRoutingSettings(RoutingSettings routing_settings);
-	void SetStops(const std::deque<Stop*>& stops);
-	void SetGraph(TransportCatalogue& catalogue);
-
-	// Getters
-
-	const std::variant<StopEdge, BusEdge>& GetEdgeAt(EdgeId id) const;
 	std::optional<WaitRange> GetRouteAtStop(Stop* stop) const;
 	std::optional<RouteGraphInfo> GetRouteGraphInfo(VertexId start, VertexId end) const;
+
+	// Init method
+	void BuildRouter();
+
+
+
+private:
+	const std::variant<StopEdge, BusEdge>& GetEdgeAt(EdgeId id) const;
 	std::deque<Stop*> GetStopsPointers(TransportCatalogue& catalogue) const;
 	std::deque<Bus*> GetBusesPointers(TransportCatalogue& catalogue) const;
 
-	// Init methods
-
-	void BuildRouter(TransportCatalogue& catalogue);
-
 	void AddEdgeToStops();
 	void AddEdgeToBuses(TransportCatalogue& catalogue);
-	Edge<double> MakeEdgeToBus(Stop* start, Stop* end, const double distance) const;
+
+	Edge<double> CreateRouteFromStops(Stop* start, Stop* end, const double distance) const;
 
 	template <typename Iterator>
 	void MakeEdgesFromBuses(Iterator first, Iterator last, const Bus* bus, const TransportCatalogue& catalogue);
@@ -64,7 +62,7 @@ void TransportRouter::MakeEdgesFromBuses(Iterator first, Iterator last, const Bu
 			dist += catalogue.GetDistanceBetweenStops(*prev(it_next), *it_next);
 			++span;
 
-			EdgeId id = graph_->AddEdge(MakeEdgeToBus(*it, *it_next, dist));
+			EdgeId id = graph_->AddEdge(CreateRouteFromStops(*it, *it_next, dist));
 
 			edge_id_to_edge_[id] = BusEdge{ bus->name, span, graph_->GetEdge(id).weight };
 		}
