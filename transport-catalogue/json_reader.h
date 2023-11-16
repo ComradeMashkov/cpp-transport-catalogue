@@ -3,6 +3,7 @@
 #include "json.h"
 #include "json_builder.h"
 #include "map_renderer.h"
+#include "serialization.h"
 #include "transport_catalogue.h"
 #include "transport_router.h"
 
@@ -20,7 +21,10 @@ public:
 	Reader(Document document);
 	Reader(std::istream& is);
 
+public:
 	void ParseQuery(TransportCatalogue& catalogue, std::vector<Stat>& stats, map_renderer::RenderSettings& render_settings, router::RoutingSettings& routing_settings);
+	void ParseNodeMakeBase(TransportCatalogue& catalogue, map_renderer::RenderSettings& render_settings, router::RoutingSettings& routing_settings, serialization::SerializationSettings& serialization_settings);
+	void ParseNodeProcessRequests(std::vector<Stat>& stats, serialization::SerializationSettings& serialization_settings);
 
 private:
 	void ParseNode(const Node& root, TransportCatalogue& catalogue, std::vector<Stat>& stats, map_renderer::RenderSettings& render_settings, router::RoutingSettings& routing_settings);
@@ -32,12 +36,13 @@ private:
 	void ParseNodeRenderColor(map_renderer::RenderSettings& render_settings, Dict render_map);
 	void ParseNodeRender(const Node& node, map_renderer::RenderSettings& render_settings);
 	void ParseNodeRoute(const Node& node, router::RoutingSettings& routing_settings);
+	void ParseNodeSerialization(const Node& node, serialization::SerializationSettings& serialization_settings);
 
 public:
 	Node MakeStopNode(int id, StopQuery query);
 	Node MakeBusNode(int id, BusQuery query);
 	Node MakeMapNode(int id, TransportCatalogue& catalogue, map_renderer::RenderSettings& render_settings);
-	Node MakeRouteNode(Stat& stat, TransportCatalogue& catalogue, router::TransportRouter& router);
+	Node MakeRouteNode(const Stat& stat, TransportCatalogue& catalogue, router::TransportRouter& router);
 
 	void FillMap(map_renderer::MapRenderer& map_renderer, TransportCatalogue& catalogue) const;
 

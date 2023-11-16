@@ -20,6 +20,60 @@ void Reader::ParseQuery(TransportCatalogue& catalogue, std::vector<Stat>& stats,
 	ParseNode(document_.GetRoot(), catalogue, stats, render_settings, routing_settings);
 }
 
+void Reader::ParseNodeMakeBase(TransportCatalogue& catalogue, map_renderer::RenderSettings& render_settings, router::RoutingSettings& routing_settings, serialization::SerializationSettings& serialization_settings) {
+	Dict root;
+
+	if (document_.GetRoot().IsDict()) {
+		root = document_.GetRoot().AsDict();
+
+		try {
+			ParseNodeBase(root.at("base_requests"), catalogue);
+		}
+		catch (...) { }
+
+		try {
+			ParseNodeRender(root.at("render_settings"), render_settings);
+		}
+		catch (...) { }
+
+		try {
+			ParseNodeRoute(root.at("routing_settings"), routing_settings);
+		}
+		catch (...) { }
+
+		try {
+			ParseNodeSerialization(root.at("serialization_settings"), serialization_settings);
+		}
+		catch (...) { }
+	}
+
+	else {
+		std::cout << "Failed to parse make_base request: root is not a map-type";
+	}
+}
+
+void Reader::ParseNodeProcessRequests(std::vector<Stat>& stats, serialization::SerializationSettings& serialization_settings) {
+	Dict root;
+
+	if (document_.GetRoot().IsDict()) {
+		root = document_.GetRoot().AsDict();
+
+		try {
+			ParseNodeStat(root.at("stat_requests"), stats);
+		}
+		catch (...) { }
+
+		try {
+			ParseNodeSerialization(root.at("serialization_settings"), serialization_settings);
+		}
+		catch (...) { }
+	}
+
+	else {
+		std::cout << "Failed to parse process_requests request: root is not a map-type";
+	}
+}
+
 void Reader::ParseNode(const Node& root, TransportCatalogue& catalogue, std::vector<Stat>& stats, map_renderer::RenderSettings& render_settings, router::RoutingSettings& routing_settings) {
 	Dict dict;
 
@@ -271,6 +325,25 @@ void Reader::ParseNodeRoute(const Node& node, router::RoutingSettings& routing_s
 	}
 }
 
+void Reader::ParseNodeSerialization(const Node& node, serialization::SerializationSettings& serialization_settings) {
+	Dict serialization;
+
+	if (node.IsDict()) {
+		serialization = node.AsDict();
+
+		try {
+			serialization_settings.file_name = serialization.at("file").AsString();
+		}
+		catch (...) {
+			std::cout << "Failed to parse serialization settings";
+		}
+	}
+
+	else {
+		std::cout << "Failed to parse serialization settings: it is not a map";
+	}
+}
+
 Node Reader::MakeStopNode(int id, StopQuery query) {
 	Node result;
 	Builder builder;
@@ -333,7 +406,7 @@ Node Reader::MakeMapNode(int id, TransportCatalogue& catalogue, map_renderer::Re
 	return result;
 }
 
-Node Reader::MakeRouteNode(Stat& stat, TransportCatalogue& catalogue, router::TransportRouter& router) {
+Node Reader::MakeRouteNode(const Stat& stat, TransportCatalogue& catalogue, router::TransportRouter& router) {
 	const auto route_info = router.GetRouteGraphInfo(catalogue.GetStop(stat.from), catalogue.GetStop(stat.to));
 
 	if (!route_info) {
@@ -357,7 +430,7 @@ void Reader::FillMap(map_renderer::MapRenderer& map_renderer, TransportCatalogue
 
 	palette_size = map_renderer.GetPaletteSize();
 	if (palette_size == 0u) {
-		std::cout << "Color palette is empty";
+		std::cout << "Color palette is empty" << std::endl;
 		return;
 	}
 

@@ -15,6 +15,8 @@ void TransportCatalogue::AddBus(const Bus& bus) {
 	for (Stop* stop : last_bus->stops) {
 		stop->buses.push_back(last_bus);
 	}
+
+	last_bus->route_length = GetRouteInfo(last_bus).distance;
 }
 
 void TransportCatalogue::AddStop(const Stop& stop) {
@@ -209,6 +211,18 @@ size_t TransportCatalogue::GetDistanceBetweenStops(const Stop* from, const Stop*
 	}
 
 	return 0u;
+}
+
+std::deque<Stop> TransportCatalogue::GetStops() const {
+	return stops_;
+}
+
+std::deque<Bus> TransportCatalogue::GetBuses() const {
+	return buses_;
+}
+
+DistanceDict TransportCatalogue::GetDistances() const {
+	return distances_;
 }
 
 } // namespace transport_catalogue

@@ -59,6 +59,10 @@ public:
 
     size_t GetDistanceBetweenStops(const Stop* from, const Stop* to) const;
 
+    std::deque<Stop> GetStops() const;
+    std::deque<Bus> GetBuses() const;
+    DistanceDict GetDistances() const;
+
 private:
     std::deque<Stop> stops_;
     StopDict stops_associative_;

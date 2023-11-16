@@ -9,7 +9,7 @@ Document RequestHandler::HandleRequest(TransportCatalogue& catalogue, std::vecto
 
 	router::TransportRouter router(catalogue, routing_settings);
 
-	for (auto stat : stats) {
+	for (const auto& stat : stats) {
 		if (stat.type == "Stop") {
 			result.push_back(reader_.MakeStopNode(stat.id, catalogue.GetStopQuery(stat.name)));
 		}

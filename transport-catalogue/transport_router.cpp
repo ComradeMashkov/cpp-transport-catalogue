@@ -24,17 +24,6 @@ TransportRouter::TransportRouter(TransportCatalogue& catalogue, RoutingSettings 
 	router_->Build();
 }
 
-//void TransportRouter::SetGraph(TransportCatalogue& catalogue) {
-//	const size_t stops_ptr_size = GetStopsPointers(catalogue).size();
-//
-//	graph_ = std::make_unique<DirectedWeightedGraph<double>>(2 * stops_ptr_size);
-//
-//	SetStops(GetStopsPointers(catalogue));
-//
-//	AddEdgeToStops();
-//	AddEdgeToBuses(catalogue);
-//}
-
 const std::variant<StopEdge, BusEdge>& TransportRouter::GetEdgeAt(EdgeId id) const {
 	return edge_id_to_edge_.at(id);
 }
@@ -48,7 +37,6 @@ std::optional<WaitRange> TransportRouter::GetRouteAtStop(Stop* stop) const {
 }
 
 std::optional<RouteGraphInfo> TransportRouter::GetRouteGraphInfo(Stop* from, Stop* to) const {
-	//const auto route_info = router.GetRouteGraphInfo(router.GetRouteAtStop(catalogue.GetStop(stat.from))->bus_wait_start, router.GetRouteAtStop(catalogue.GetStop(stat.to))->bus_wait_start);
 	const auto route_info = router_->BuildRoute(GetRouteAtStop(from)->bus_wait_start, GetRouteAtStop(to)->bus_wait_start);
 	
 	if (route_info) {

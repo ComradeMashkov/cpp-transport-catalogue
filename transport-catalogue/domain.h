@@ -29,6 +29,7 @@ struct Bus {
     std::string name;
     std::vector<Stop*> stops;
     bool is_roundtrip;
+    size_t route_length;
 };
 
 struct Distance {
