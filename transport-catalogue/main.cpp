@@ -44,7 +44,7 @@ int main(int argc, char* argv[]) {
         reader = Reader(cin);
         reader.ParseNodeMakeBase(catalogue, render_settings, routing_settings, serialization_settings);
         ofstream out_file(serialization_settings.file_name, ios::binary);
-        SerializeTransportCatalogue(catalogue, render_settings, routing_settings, out_file);
+        SerializeTransportCatalogueUnion(catalogue, render_settings, routing_settings, out_file);
 
     } 
 
@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
         reader.ParseNodeProcessRequests(stats, serialization_settings);
 
         ifstream in_file(serialization_settings.file_name, ios::binary);
-        TransportCatalogueUnion catalogue_union = DeserializeTransportCatalogue(in_file);
+        TransportCatalogueUnion catalogue_union = DeserializeTransportCatalogueUnion(in_file);
 
         RequestHandler request_handler;
 
