@@ -75,13 +75,7 @@ transport_catalogue_protobuf::TransportCatalogue SerializeTransportCatalogue(con
     return catalogue_serialized;
 }
 
-transport_catalogue::TransportCatalogue DeserializeTransportCatalogue(const transport_catalogue_protobuf::TransportCatalogue& catalogue_serialized) {
-    transport_catalogue::TransportCatalogue catalogue;
-    
-    const auto& stops_serialized = catalogue_serialized.stops();
-    const auto& buses_serialized = catalogue_serialized.buses();
-    const auto& distances_serialized = catalogue_serialized.distances();
-    
+void DeserializeStops(transport_catalogue::TransportCatalogue& catalogue, const google::protobuf::RepeatedPtrField<transport_catalogue_protobuf::Stop>& stops_serialized) {
     for (const auto& stop : stops_serialized) {
         
         domain::Stop stop_tmp;
@@ -92,9 +86,9 @@ transport_catalogue::TransportCatalogue DeserializeTransportCatalogue(const tran
         
         catalogue.AddStop(std::move(stop_tmp));
     }
-    
-    const auto& stops_tmp = catalogue.GetStops(); 
-    
+}
+
+void DeserializeDistances(transport_catalogue::TransportCatalogue& catalogue, const google::protobuf::RepeatedPtrField<transport_catalogue_protobuf::Distance>& distances_serialized, const std::deque<Stop>& stops_tmp) {
     std::vector<domain::Distance> distances;
     for (const auto& distance : distances_serialized) {
         
@@ -110,8 +104,10 @@ transport_catalogue::TransportCatalogue DeserializeTransportCatalogue(const tran
     
     for (const auto& distance : distances) {
         catalogue.AddDistance(distance);
-    }     
-    
+    } 
+}
+
+void DeserializeBuses(transport_catalogue::TransportCatalogue& catalogue, const google::protobuf::RepeatedPtrField<transport_catalogue_protobuf::Bus>& buses_serialized, const std::deque<Stop>& stops_tmp) {
     for (const auto& bus_proto : buses_serialized) {  
     
         domain::Bus bus_tmp;
@@ -127,7 +123,21 @@ transport_catalogue::TransportCatalogue DeserializeTransportCatalogue(const tran
         bus_tmp.route_length = bus_proto.route_length();
         
         catalogue.AddBus(std::move(bus_tmp));
-    }   
+    } 
+}
+
+transport_catalogue::TransportCatalogue DeserializeTransportCatalogue(const transport_catalogue_protobuf::TransportCatalogue& catalogue_serialized) {
+    transport_catalogue::TransportCatalogue catalogue;
+
+    const auto& stops_serialized = catalogue_serialized.stops();
+    DeserializeStops(catalogue, stops_serialized);
+    const auto& stops_tmp = catalogue.GetStops(); 
+
+    const auto& distances_serialized = catalogue_serialized.distances();
+    DeserializeDistances(catalogue, distances_serialized, stops_tmp);
+    
+    const auto& buses_serialized = catalogue_serialized.buses();
+    DeserializeBuses(catalogue, buses_serialized, stops_tmp);
     
     return catalogue;
 }

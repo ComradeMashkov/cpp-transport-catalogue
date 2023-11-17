@@ -26,12 +26,13 @@ template <typename It>
 uint32_t CalculateDistance(It range_begin, It range_end, std::string_view name);
 
 void SerializeStops(transport_catalogue_protobuf::TransportCatalogue& catalogue_serialized, const std::deque<Stop>& stops);
-
 void SerializeBuses(transport_catalogue_protobuf::TransportCatalogue& catalogue_serialized, const std::deque<Stop>& stops, const std::deque<Bus>& buses);
-
 void SerializeDistances(transport_catalogue_protobuf::TransportCatalogue& catalogue_serialized, const std::deque<Stop>& stops, const transport_catalogue::DistanceDict& distances);
-
 transport_catalogue_protobuf::TransportCatalogue SerializeTransportCatalogue(const transport_catalogue::TransportCatalogue& catalogue);
+
+void DeserializeStops(transport_catalogue::TransportCatalogue& catalogue, const google::protobuf::RepeatedPtrField<transport_catalogue_protobuf::Stop>& stops_serialized);
+void DeserializeDistances(transport_catalogue::TransportCatalogue& catalogue, const google::protobuf::RepeatedPtrField<transport_catalogue_protobuf::Distance>& distances_serialized, const std::deque<Stop>& stops_tmp);
+void DeserializeBuses(transport_catalogue::TransportCatalogue& catalogue, const google::protobuf::RepeatedPtrField<transport_catalogue_protobuf::Bus>& buses_serialized, const std::deque<Stop>& stops_tmp);
 transport_catalogue::TransportCatalogue DeserializeTransportCatalogue(const transport_catalogue_protobuf::TransportCatalogue& catalogue_serialized);
 
 transport_catalogue_protobuf::Color SerializeColor(const svg::Color& color);
