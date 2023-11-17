@@ -53,9 +53,7 @@ void SerializeDistances(transport_catalogue_protobuf::TransportCatalogue& catalo
  
         distance_serialized.set_start(CalculateDistance(stops.cbegin(), stops.cend(), pair_stops.first->name));
                                               
-        distance_serialized.set_end(CalculateDistance(stops.cbegin(), 
-                                            stops.cend(), 
-                                            pair_stops.second->name));
+        distance_serialized.set_end(CalculateDistance(stops.cbegin(), stops.cend(), pair_stops.second->name));
                                             
         distance_serialized.set_distance(pair_distance);
  
