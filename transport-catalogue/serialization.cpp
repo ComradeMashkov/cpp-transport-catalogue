@@ -11,13 +11,7 @@ uint32_t CalculateDistance(It range_begin, It range_end, std::string_view name) 
     return std::distance(range_begin, it);
 }
 
-transport_catalogue_protobuf::TransportCatalogue SerializeTransportCatalogue(const transport_catalogue::TransportCatalogue& catalogue) {
-    transport_catalogue_protobuf::TransportCatalogue catalogue_serialized;
-
-    const auto& stops = catalogue.GetStops();
-    const auto& buses = catalogue.GetBuses();
-    const auto& distances = catalogue.GetDistances();
-
+void SerializeStops(transport_catalogue_protobuf::TransportCatalogue& catalogue_serialized, const std::deque<Stop>& stops) {
     int id = 0;
     for (const auto& stop : stops) {
         transport_catalogue_protobuf::Stop stop_serialized;
@@ -31,7 +25,9 @@ transport_catalogue_protobuf::TransportCatalogue SerializeTransportCatalogue(con
 
         ++id;
     }
+}
 
+void SerializeBuses(transport_catalogue_protobuf::TransportCatalogue& catalogue_serialized, const std::deque<Stop>& stops, const std::deque<Bus>& buses) {
     for (const auto& bus : buses) {
  
         transport_catalogue_protobuf::Bus bus_serialized;
@@ -48,7 +44,9 @@ transport_catalogue_protobuf::TransportCatalogue SerializeTransportCatalogue(con
  
         *catalogue_serialized.add_buses() = std::move(bus_serialized);
     }
-    
+}
+
+void SerializeDistances(transport_catalogue_protobuf::TransportCatalogue& catalogue_serialized, const std::deque<Stop>& stops, const transport_catalogue::DistanceDict& distances) {
     for (const auto& [pair_stops, pair_distance] : distances) {
  
         transport_catalogue_protobuf::Distance distance_serialized;
@@ -63,6 +61,18 @@ transport_catalogue_protobuf::TransportCatalogue SerializeTransportCatalogue(con
  
         *catalogue_serialized.add_distances() = std::move(distance_serialized);
     }
+}
+
+transport_catalogue_protobuf::TransportCatalogue SerializeTransportCatalogue(const transport_catalogue::TransportCatalogue& catalogue) {
+    transport_catalogue_protobuf::TransportCatalogue catalogue_serialized;
+
+    const auto& stops = catalogue.GetStops();
+    const auto& buses = catalogue.GetBuses();
+    const auto& distances = catalogue.GetDistances();
+
+    SerializeStops(catalogue_serialized, stops);
+    SerializeBuses(catalogue_serialized, stops, buses);
+    SerializeDistances(catalogue_serialized, stops, distances);
  
     return catalogue_serialized;
 }

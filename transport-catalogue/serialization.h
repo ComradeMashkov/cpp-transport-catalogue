@@ -25,6 +25,12 @@ struct TransportCatalogueUnion {
 template <typename It>
 uint32_t CalculateDistance(It range_begin, It range_end, std::string_view name);
 
+void SerializeStops(transport_catalogue_protobuf::TransportCatalogue& catalogue_serialized, const std::deque<Stop>& stops);
+
+void SerializeBuses(transport_catalogue_protobuf::TransportCatalogue& catalogue_serialized, const std::deque<Stop>& stops, const std::deque<Bus>& buses);
+
+void SerializeDistances(transport_catalogue_protobuf::TransportCatalogue& catalogue_serialized, const std::deque<Stop>& stops, const transport_catalogue::DistanceDict& distances);
+
 transport_catalogue_protobuf::TransportCatalogue SerializeTransportCatalogue(const transport_catalogue::TransportCatalogue& catalogue);
 transport_catalogue::TransportCatalogue DeserializeTransportCatalogue(const transport_catalogue_protobuf::TransportCatalogue& catalogue_serialized);
 
