@@ -63,13 +63,13 @@ void SerializeDistances(transport_catalogue_protobuf::TransportCatalogue& catalo
 
 transport_catalogue_protobuf::TransportCatalogue SerializeTransportCatalogue(const transport_catalogue::TransportCatalogue& catalogue) {
     transport_catalogue_protobuf::TransportCatalogue catalogue_serialized;
-
     const auto& stops = catalogue.GetStops();
-    const auto& buses = catalogue.GetBuses();
-    const auto& distances = catalogue.GetDistances();
-
     SerializeStops(catalogue_serialized, stops);
+
+    const auto& buses = catalogue.GetBuses();
     SerializeBuses(catalogue_serialized, stops, buses);
+
+    const auto& distances = catalogue.GetDistances();
     SerializeDistances(catalogue_serialized, stops, distances);
  
     return catalogue_serialized;
